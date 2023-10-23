@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>LSTM &#8212; LinguAML</title>
   
@@ -44,7 +44,6 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
@@ -70,7 +69,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="Introduction" href="../introduction/index.html" />
     <link rel="prev" title="PPO" href="ppo.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:language" content="None"/>
   </head>
   
   
@@ -379,9 +378,9 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="lstm">
-<h1>LSTM<a class="headerlink" href="#lstm" title="Permalink to this heading">#</a></h1>
+<h1>LSTM<a class="headerlink" href="#lstm" title="Permalink to this headline">#</a></h1>
 <section id="imports">
-<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this heading">#</a></h2>
+<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">Optional</span>
@@ -410,7 +409,7 @@ document.write(`
 </div>
 </section>
 <section id="lstm-cell">
-<h2>LSTM Cell<a class="headerlink" href="#lstm-cell" title="Permalink to this heading">#</a></h2>
+<h2>LSTM Cell<a class="headerlink" href="#lstm-cell" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Input size of x, i.e.,</span>
@@ -587,7 +586,7 @@ c: tensor([ 0.5594, -0.6413])
 <p>As we have verified, the manual calculations agree with PyTorch’s implementation.</p>
 </section>
 <section id="id1">
-<h2>LSTM<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h2>
+<h2>LSTM<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span>
@@ -748,7 +747,7 @@ tensor([[ 0.0362, -0.0598]])
 </div>
 </section>
 <section id="stacked-lstm">
-<h2>Stacked LSTM<a class="headerlink" href="#stacked-lstm" title="Permalink to this heading">#</a></h2>
+<h2>Stacked LSTM<a class="headerlink" href="#stacked-lstm" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stacked_lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span>
@@ -890,9 +889,9 @@ tensor([[ 0.0362, -0.0598]])
 </div>
 </section>
 <section id="air-quality-prediction-using-lstm">
-<h2>Air Quality Prediction Using LSTM<a class="headerlink" href="#air-quality-prediction-using-lstm" title="Permalink to this heading">#</a></h2>
+<h2>Air Quality Prediction Using LSTM<a class="headerlink" href="#air-quality-prediction-using-lstm" title="Permalink to this headline">#</a></h2>
 <section id="data">
-<h3>Data<a class="headerlink" href="#data" title="Permalink to this heading">#</a></h3>
+<h3>Data<a class="headerlink" href="#data" title="Permalink to this headline">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read original CSV file content</span>

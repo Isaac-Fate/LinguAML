@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>PPO &#8212; LinguAML</title>
   
@@ -44,7 +44,6 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
@@ -68,7 +67,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="next" title="LSTM" href="lstm.html" />
     <link rel="prev" title="Preliminaries" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:language" content="None"/>
   </head>
   
   
@@ -378,7 +377,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="ppo">
-<h1>PPO<a class="headerlink" href="#ppo" title="Permalink to this heading">#</a></h1>
+<h1>PPO<a class="headerlink" href="#ppo" title="Permalink to this headline">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">Optional</span>
@@ -420,12 +419,12 @@ document.write(`
 </div>
 </div>
 <section id="ppo-algorithm">
-<h2>PPO Algorithm<a class="headerlink" href="#ppo-algorithm" title="Permalink to this heading">#</a></h2>
+<h2>PPO Algorithm<a class="headerlink" href="#ppo-algorithm" title="Permalink to this headline">#</a></h2>
 <p>The following snapshot shows the pseudocode of the PPO-Clip algorithm:</p>
 <p><a class="reference internal" href="../_images/ppo-clip.png"><img alt="../_images/ppo-clip.png" src="../_images/ppo-clip.png" style="width: 500px;" /></a></img></p>
 </section>
 <section id="environment-specifications">
-<h2>Environment Specifications<a class="headerlink" href="#environment-specifications" title="Permalink to this heading">#</a></h2>
+<h2>Environment Specifications<a class="headerlink" href="#environment-specifications" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_state_dim</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
@@ -487,7 +486,7 @@ action spec: ActionSpec(dim=1, min=array([-2.], dtype=float32), max=array([2.], 
 </div>
 </section>
 <section id="actor-and-critic-models">
-<h2>Actor and Critic Models<a class="headerlink" href="#actor-and-critic-models" title="Permalink to this heading">#</a></h2>
+<h2>Actor and Critic Models<a class="headerlink" href="#actor-and-critic-models" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MLP</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -538,8 +537,21 @@ action spec: ActionSpec(dim=1, min=array([-2.], dtype=float32), max=array([2.], 
         
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
             <span class="n">in_dim</span><span class="o">=</span><span class="n">state_dim</span><span class="p">,</span>
-            <span class="c1"># out_dim=action_spec.dim * 2,</span>
-            <span class="n">out_dim</span><span class="o">=</span><span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span> <span class="o">*</span> <span class="mi">1</span>
+            <span class="n">out_dim</span><span class="o">=</span><span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_param1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_param2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">action_spec</span><span class="o">.</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
         <span class="p">)</span>
         
     <span class="nd">@property</span>
@@ -551,13 +563,25 @@ action spec: ActionSpec(dim=1, min=array([-2.], dtype=float32), max=array([2.], 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         
         <span class="n">out</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    
+        <span class="n">param1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_param1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">param2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_param2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         
-        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">mean</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_min</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_min</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_min</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_min</span>
+        <span class="c1"># mean = param1 * (self._action_max - self._action_min) + self._action_min</span>
+        <span class="c1"># std = param2</span>
         <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
         
-        <span class="k">return</span> <span class="n">out</span>
+        <span class="c1"># mean = F.sigmoid(out[..., 0]) * (self._action_max - self._action_min) + self._action_min</span>
+        <span class="c1"># std = torch.ones_like(mean) * 0.5</span>
+        
+        <span class="c1"># Generate the distribution</span>
+        <span class="n">distribution</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
+        
+        <span class="c1"># Store the distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+        
+        <span class="k">return</span> <span class="n">distribution</span>
     
     <span class="k">def</span> <span class="nf">select_action</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> 
@@ -606,8 +630,20 @@ action spec: ActionSpec(dim=1, min=array([-2.], dtype=float32), max=array([2.], 
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>action: tensor([-0.3802])
-log-probability: -0.3060244917869568
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>action: tensor([0.4161])
+log-probability: -0.7357034683227539
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span><span class="o">.</span><span class="n">distribution</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Normal(loc: tensor([-0.0888], grad_fn=&lt;AddBackward0&gt;), scale: tensor([0.5000]))
 </pre></div>
 </div>
 </div>
@@ -647,7 +683,7 @@ log-probability: -0.3060244917869568
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>estimated state value: 0.13156895339488983
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>estimated state value: 0.1734076738357544
 </pre></div>
 </div>
 </div>
@@ -731,7 +767,7 @@ log-probability: -0.3060244917869568
 </div>
 </section>
 <section id="transition-data">
-<h2>Transition Data<a class="headerlink" href="#transition-data" title="Permalink to this heading">#</a></h2>
+<h2>Transition Data<a class="headerlink" href="#transition-data" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Transition</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
@@ -867,7 +903,7 @@ log-probability: -0.3060244917869568
 </div>
 </section>
 <section id="updating-actor-and-critic">
-<h2>Updating Actor and Critic<a class="headerlink" href="#updating-actor-and-critic" title="Permalink to this heading">#</a></h2>
+<h2>Updating Actor and Critic<a class="headerlink" href="#updating-actor-and-critic" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">actor_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">actor</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
@@ -957,7 +993,7 @@ log-probability: -0.3060244917869568
 </div>
 </section>
 <section id="ppo-class">
-<h2>PPO Class<a class="headerlink" href="#ppo-class" title="Permalink to this heading">#</a></h2>
+<h2>PPO Class<a class="headerlink" href="#ppo-class" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PPO</span><span class="p">:</span>
@@ -1038,7 +1074,7 @@ log-probability: -0.3060244917869568
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ppo</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span>
@@ -1050,7 +1086,7 @@ log-probability: -0.3060244917869568
         <span class="n">gamma</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
         <span class="n">n_epochs_for_actor_critic</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">lr</span><span class="o">=</span><span class="mf">0.005</span>
+        <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span>
     <span class="p">)</span>
 <span class="p">)</span>
 
@@ -1059,206 +1095,206 @@ log-probability: -0.3060244917869568
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-09-20 21:52:55,780 | INFO | PPO epoch: 1
-2023-09-20 21:52:56,741 | INFO | average episode rewards: -6.747819602904104
-2023-09-20 21:52:57,146 | INFO | PPO epoch: 2
-2023-09-20 21:52:58,051 | INFO | average episode rewards: -6.316573743532303
-2023-09-20 21:52:58,364 | INFO | PPO epoch: 3
-2023-09-20 21:52:59,263 | INFO | average episode rewards: -6.2389782488067045
-2023-09-20 21:52:59,552 | INFO | PPO epoch: 4
-2023-09-20 21:53:00,494 | INFO | average episode rewards: -5.820896284379359
-2023-09-20 21:53:00,785 | INFO | PPO epoch: 5
-2023-09-20 21:53:01,693 | INFO | average episode rewards: -6.155192454101085
-2023-09-20 21:53:01,983 | INFO | PPO epoch: 6
-2023-09-20 21:53:02,938 | INFO | average episode rewards: -5.775964028044352
-2023-09-20 21:53:03,269 | INFO | PPO epoch: 7
-2023-09-20 21:53:04,174 | INFO | average episode rewards: -6.097570256096448
-2023-09-20 21:53:04,474 | INFO | PPO epoch: 8
-2023-09-20 21:53:05,380 | INFO | average episode rewards: -5.762353049611248
-2023-09-20 21:53:05,670 | INFO | PPO epoch: 9
-2023-09-20 21:53:06,588 | INFO | average episode rewards: -5.750749808861435
-2023-09-20 21:53:06,919 | INFO | PPO epoch: 10
-2023-09-20 21:53:07,825 | INFO | average episode rewards: -5.925486201277525
-2023-09-20 21:53:08,118 | INFO | PPO epoch: 11
-2023-09-20 21:53:09,020 | INFO | average episode rewards: -5.601728454093864
-2023-09-20 21:53:09,309 | INFO | PPO epoch: 12
-2023-09-20 21:53:10,250 | INFO | average episode rewards: -5.511589115259449
-2023-09-20 21:53:10,539 | INFO | PPO epoch: 13
-2023-09-20 21:53:11,452 | INFO | average episode rewards: -5.474337167761982
-2023-09-20 21:53:11,741 | INFO | PPO epoch: 14
-2023-09-20 21:53:12,655 | INFO | average episode rewards: -5.440881237263256
-2023-09-20 21:53:12,985 | INFO | PPO epoch: 15
-2023-09-20 21:53:13,891 | INFO | average episode rewards: -4.958294095323166
-2023-09-20 21:53:14,178 | INFO | PPO epoch: 16
-2023-09-20 21:53:15,096 | INFO | average episode rewards: -5.562900696759878
-2023-09-20 21:53:15,381 | INFO | PPO epoch: 17
-2023-09-20 21:53:16,324 | INFO | average episode rewards: -4.6454148031388405
-2023-09-20 21:53:16,621 | INFO | PPO epoch: 18
-2023-09-20 21:53:17,524 | INFO | average episode rewards: -5.059112303784164
-2023-09-20 21:53:17,809 | INFO | PPO epoch: 19
-2023-09-20 21:53:18,712 | INFO | average episode rewards: -4.829879286839403
-2023-09-20 21:53:19,039 | INFO | PPO epoch: 20
-2023-09-20 21:53:19,941 | INFO | average episode rewards: -5.261179262379331
-2023-09-20 21:53:20,227 | INFO | PPO epoch: 21
-2023-09-20 21:53:21,128 | INFO | average episode rewards: -4.70586360446199
-2023-09-20 21:53:21,414 | INFO | PPO epoch: 22
-2023-09-20 21:53:22,314 | INFO | average episode rewards: -4.846271023066891
-2023-09-20 21:53:22,641 | INFO | PPO epoch: 23
-2023-09-20 21:53:23,542 | INFO | average episode rewards: -4.756648877085436
-2023-09-20 21:53:23,828 | INFO | PPO epoch: 24
-2023-09-20 21:53:24,739 | INFO | average episode rewards: -4.799191891984065
-2023-09-20 21:53:25,024 | INFO | PPO epoch: 25
-2023-09-20 21:53:25,964 | INFO | average episode rewards: -4.601923387416849
-2023-09-20 21:53:26,255 | INFO | PPO epoch: 26
-2023-09-20 21:53:27,169 | INFO | average episode rewards: -4.643306673489573
-2023-09-20 21:53:27,458 | INFO | PPO epoch: 27
-2023-09-20 21:53:28,362 | INFO | average episode rewards: -4.470343861387041
-2023-09-20 21:53:28,691 | INFO | PPO epoch: 28
-2023-09-20 21:53:29,594 | INFO | average episode rewards: -4.582000942095064
-2023-09-20 21:53:29,880 | INFO | PPO epoch: 29
-2023-09-20 21:53:30,774 | INFO | average episode rewards: -4.273313377775145
-2023-09-20 21:53:31,061 | INFO | PPO epoch: 30
-2023-09-20 21:53:31,957 | INFO | average episode rewards: -4.553994887473372
-2023-09-20 21:53:32,287 | INFO | PPO epoch: 31
-2023-09-20 21:53:33,188 | INFO | average episode rewards: -4.455540902921747
-2023-09-20 21:53:33,474 | INFO | PPO epoch: 32
-2023-09-20 21:53:34,378 | INFO | average episode rewards: -4.357206906682559
-2023-09-20 21:53:34,672 | INFO | PPO epoch: 33
-2023-09-20 21:53:35,646 | INFO | average episode rewards: -4.4295739324388475
-2023-09-20 21:53:35,938 | INFO | PPO epoch: 34
-2023-09-20 21:53:36,868 | INFO | average episode rewards: -4.5332748804726695
-2023-09-20 21:53:37,154 | INFO | PPO epoch: 35
-2023-09-20 21:53:38,057 | INFO | average episode rewards: -4.1536973902323036
-2023-09-20 21:53:38,384 | INFO | PPO epoch: 36
-2023-09-20 21:53:39,293 | INFO | average episode rewards: -4.120210823890338
-2023-09-20 21:53:39,577 | INFO | PPO epoch: 37
-2023-09-20 21:53:40,478 | INFO | average episode rewards: -3.9294621183180456
-2023-09-20 21:53:40,763 | INFO | PPO epoch: 38
-2023-09-20 21:53:41,706 | INFO | average episode rewards: -4.109125336567277
-2023-09-20 21:53:41,995 | INFO | PPO epoch: 39
-2023-09-20 21:53:42,896 | INFO | average episode rewards: -4.095667173918265
-2023-09-20 21:53:43,181 | INFO | PPO epoch: 40
-2023-09-20 21:53:44,080 | INFO | average episode rewards: -3.9604014641110172
-2023-09-20 21:53:44,370 | INFO | PPO epoch: 41
-2023-09-20 21:53:45,334 | INFO | average episode rewards: -3.9681369769084154
-2023-09-20 21:53:45,624 | INFO | PPO epoch: 42
-2023-09-20 21:53:46,539 | INFO | average episode rewards: -3.9919226589441967
-2023-09-20 21:53:46,829 | INFO | PPO epoch: 43
-2023-09-20 21:53:47,729 | INFO | average episode rewards: -3.7667089108295126
-2023-09-20 21:53:48,016 | INFO | PPO epoch: 44
-2023-09-20 21:53:48,951 | INFO | average episode rewards: -3.822356591898337
-2023-09-20 21:53:49,236 | INFO | PPO epoch: 45
-2023-09-20 21:53:50,138 | INFO | average episode rewards: -3.8395933704235023
-2023-09-20 21:53:50,423 | INFO | PPO epoch: 46
-2023-09-20 21:53:51,333 | INFO | average episode rewards: -3.629117225859454
-2023-09-20 21:53:51,661 | INFO | PPO epoch: 47
-2023-09-20 21:53:52,566 | INFO | average episode rewards: -3.6226522508789922
-2023-09-20 21:53:52,854 | INFO | PPO epoch: 48
-2023-09-20 21:53:53,756 | INFO | average episode rewards: -3.62927627033499
-2023-09-20 21:53:54,042 | INFO | PPO epoch: 49
-2023-09-20 21:53:54,960 | INFO | average episode rewards: -3.527059275072082
-2023-09-20 21:53:55,290 | INFO | PPO epoch: 50
-2023-09-20 21:53:56,200 | INFO | average episode rewards: -3.4001140875793916
-2023-09-20 21:53:56,488 | INFO | PPO epoch: 51
-2023-09-20 21:53:57,403 | INFO | average episode rewards: -3.3653413486687715
-2023-09-20 21:53:57,694 | INFO | PPO epoch: 52
-2023-09-20 21:53:58,662 | INFO | average episode rewards: -3.1422691520306882
-2023-09-20 21:53:58,951 | INFO | PPO epoch: 53
-2023-09-20 21:53:59,857 | INFO | average episode rewards: -3.1413888338686533
-2023-09-20 21:54:00,144 | INFO | PPO epoch: 54
-2023-09-20 21:54:01,051 | INFO | average episode rewards: -3.040975341277047
-2023-09-20 21:54:01,379 | INFO | PPO epoch: 55
-2023-09-20 21:54:02,292 | INFO | average episode rewards: -2.8722041800550375
-2023-09-20 21:54:02,578 | INFO | PPO epoch: 56
-2023-09-20 21:54:03,483 | INFO | average episode rewards: -2.4377147292501165
-2023-09-20 21:54:03,767 | INFO | PPO epoch: 57
-2023-09-20 21:54:04,724 | INFO | average episode rewards: -2.221236173105737
-2023-09-20 21:54:05,012 | INFO | PPO epoch: 58
-2023-09-20 21:54:05,914 | INFO | average episode rewards: -1.300190598236507
-2023-09-20 21:54:06,212 | INFO | PPO epoch: 59
-2023-09-20 21:54:07,132 | INFO | average episode rewards: -1.2008209701846753
-2023-09-20 21:54:07,417 | INFO | PPO epoch: 60
-2023-09-20 21:54:08,359 | INFO | average episode rewards: -1.1795160879497761
-2023-09-20 21:54:08,644 | INFO | PPO epoch: 61
-2023-09-20 21:54:09,536 | INFO | average episode rewards: -1.2298895118282602
-2023-09-20 21:54:09,822 | INFO | PPO epoch: 62
-2023-09-20 21:54:10,722 | INFO | average episode rewards: -1.0243352197469442
-2023-09-20 21:54:11,006 | INFO | PPO epoch: 63
-2023-09-20 21:54:11,943 | INFO | average episode rewards: -1.0112639870947373
-2023-09-20 21:54:12,230 | INFO | PPO epoch: 64
-2023-09-20 21:54:13,135 | INFO | average episode rewards: -1.1049172124611217
-2023-09-20 21:54:13,420 | INFO | PPO epoch: 65
-2023-09-20 21:54:14,322 | INFO | average episode rewards: -1.2974646454123118
-2023-09-20 21:54:14,664 | INFO | PPO epoch: 66
-2023-09-20 21:54:15,569 | INFO | average episode rewards: -0.8948918131835875
-2023-09-20 21:54:15,855 | INFO | PPO epoch: 67
-2023-09-20 21:54:16,765 | INFO | average episode rewards: -0.9641602832932524
-2023-09-20 21:54:17,051 | INFO | PPO epoch: 68
-2023-09-20 21:54:17,952 | INFO | average episode rewards: -0.9896057131147923
-2023-09-20 21:54:18,281 | INFO | PPO epoch: 69
-2023-09-20 21:54:19,177 | INFO | average episode rewards: -0.9332601902788625
-2023-09-20 21:54:19,462 | INFO | PPO epoch: 70
-2023-09-20 21:54:20,360 | INFO | average episode rewards: -0.9399279851209154
-2023-09-20 21:54:20,646 | INFO | PPO epoch: 71
-2023-09-20 21:54:21,593 | INFO | average episode rewards: -0.9938175324385254
-2023-09-20 21:54:21,879 | INFO | PPO epoch: 72
-2023-09-20 21:54:22,779 | INFO | average episode rewards: -0.7964560904079345
-2023-09-20 21:54:23,063 | INFO | PPO epoch: 73
-2023-09-20 21:54:23,965 | INFO | average episode rewards: -0.9734332301783976
-2023-09-20 21:54:24,293 | INFO | PPO epoch: 74
-2023-09-20 21:54:25,206 | INFO | average episode rewards: -0.8396315012248815
-2023-09-20 21:54:25,491 | INFO | PPO epoch: 75
-2023-09-20 21:54:26,400 | INFO | average episode rewards: -0.8318261726123481
-2023-09-20 21:54:26,691 | INFO | PPO epoch: 76
-2023-09-20 21:54:27,643 | INFO | average episode rewards: -0.8939341701070905
-2023-09-20 21:54:27,928 | INFO | PPO epoch: 77
-2023-09-20 21:54:28,848 | INFO | average episode rewards: -0.9107139459399188
-2023-09-20 21:54:29,133 | INFO | PPO epoch: 78
-2023-09-20 21:54:30,038 | INFO | average episode rewards: -0.8692642914106468
-2023-09-20 21:54:30,324 | INFO | PPO epoch: 79
-2023-09-20 21:54:31,267 | INFO | average episode rewards: -0.929232069036097
-2023-09-20 21:54:31,552 | INFO | PPO epoch: 80
-2023-09-20 21:54:32,457 | INFO | average episode rewards: -0.9377932852924112
-2023-09-20 21:54:32,743 | INFO | PPO epoch: 81
-2023-09-20 21:54:33,648 | INFO | average episode rewards: -0.7313329626605298
-2023-09-20 21:54:33,933 | INFO | PPO epoch: 82
-2023-09-20 21:54:34,878 | INFO | average episode rewards: -0.9150710433728836
-2023-09-20 21:54:35,169 | INFO | PPO epoch: 83
-2023-09-20 21:54:36,084 | INFO | average episode rewards: -0.792542909582304
-2023-09-20 21:54:36,375 | INFO | PPO epoch: 84
-2023-09-20 21:54:37,288 | INFO | average episode rewards: -0.895361102316542
-2023-09-20 21:54:37,617 | INFO | PPO epoch: 85
-2023-09-20 21:54:38,505 | INFO | average episode rewards: -1.0188418821655705
-2023-09-20 21:54:38,795 | INFO | PPO epoch: 86
-2023-09-20 21:54:39,696 | INFO | average episode rewards: -0.9650505008639884
-2023-09-20 21:54:39,982 | INFO | PPO epoch: 87
-2023-09-20 21:54:40,884 | INFO | average episode rewards: -0.7159704743997463
-2023-09-20 21:54:41,210 | INFO | PPO epoch: 88
-2023-09-20 21:54:42,118 | INFO | average episode rewards: -0.866626255229999
-2023-09-20 21:54:42,405 | INFO | PPO epoch: 89
-2023-09-20 21:54:43,306 | INFO | average episode rewards: -0.8378647697060533
-2023-09-20 21:54:43,592 | INFO | PPO epoch: 90
-2023-09-20 21:54:44,541 | INFO | average episode rewards: -0.7042977937820154
-2023-09-20 21:54:44,828 | INFO | PPO epoch: 91
-2023-09-20 21:54:45,730 | INFO | average episode rewards: -1.0255957595780614
-2023-09-20 21:54:46,031 | INFO | PPO epoch: 92
-2023-09-20 21:54:46,948 | INFO | average episode rewards: -0.9271403267794733
-2023-09-20 21:54:47,276 | INFO | PPO epoch: 93
-2023-09-20 21:54:48,184 | INFO | average episode rewards: -1.0815551124131755
-2023-09-20 21:54:48,468 | INFO | PPO epoch: 94
-2023-09-20 21:54:49,370 | INFO | average episode rewards: -0.6528609265609956
-2023-09-20 21:54:49,657 | INFO | PPO epoch: 95
-2023-09-20 21:54:50,600 | INFO | average episode rewards: -0.8771459179361705
-2023-09-20 21:54:50,886 | INFO | PPO epoch: 96
-2023-09-20 21:54:51,784 | INFO | average episode rewards: -0.7905090318632411
-2023-09-20 21:54:52,070 | INFO | PPO epoch: 97
-2023-09-20 21:54:52,972 | INFO | average episode rewards: -0.6948451624040723
-2023-09-20 21:54:53,257 | INFO | PPO epoch: 98
-2023-09-20 21:54:54,203 | INFO | average episode rewards: -0.7900952480027663
-2023-09-20 21:54:54,501 | INFO | PPO epoch: 99
-2023-09-20 21:54:55,414 | INFO | average episode rewards: -0.8600416147734973
-2023-09-20 21:54:55,702 | INFO | PPO epoch: 100
-2023-09-20 21:54:56,605 | INFO | average episode rewards: -0.8103320320828827
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-09-21 14:43:53,491 | INFO | PPO epoch: 1
+2023-09-21 14:43:54,746 | INFO | average episode rewards: -6.110923935401077
+2023-09-21 14:43:55,076 | INFO | PPO epoch: 2
+2023-09-21 14:43:56,339 | INFO | average episode rewards: -6.071260639772841
+2023-09-21 14:43:56,656 | INFO | PPO epoch: 3
+2023-09-21 14:43:57,937 | INFO | average episode rewards: -6.286279557600787
+2023-09-21 14:43:58,241 | INFO | PPO epoch: 4
+2023-09-21 14:43:59,476 | INFO | average episode rewards: -5.504663757900611
+2023-09-21 14:43:59,785 | INFO | PPO epoch: 5
+2023-09-21 14:44:01,035 | INFO | average episode rewards: -6.153235834902657
+2023-09-21 14:44:01,327 | INFO | PPO epoch: 6
+2023-09-21 14:44:02,545 | INFO | average episode rewards: -6.730246981997852
+2023-09-21 14:44:02,837 | INFO | PPO epoch: 7
+2023-09-21 14:44:04,076 | INFO | average episode rewards: -5.464440702286453
+2023-09-21 14:44:04,458 | INFO | PPO epoch: 8
+2023-09-21 14:44:05,671 | INFO | average episode rewards: -5.593644874240346
+2023-09-21 14:44:05,962 | INFO | PPO epoch: 9
+2023-09-21 14:44:07,171 | INFO | average episode rewards: -6.399172619649428
+2023-09-21 14:44:07,462 | INFO | PPO epoch: 10
+2023-09-21 14:44:08,685 | INFO | average episode rewards: -6.022530136556304
+2023-09-21 14:44:08,983 | INFO | PPO epoch: 11
+2023-09-21 14:44:10,215 | INFO | average episode rewards: -6.050024077415373
+2023-09-21 14:44:10,573 | INFO | PPO epoch: 12
+2023-09-21 14:44:11,792 | INFO | average episode rewards: -5.595678804214014
+2023-09-21 14:44:12,085 | INFO | PPO epoch: 13
+2023-09-21 14:44:13,291 | INFO | average episode rewards: -5.7897880148753895
+2023-09-21 14:44:13,583 | INFO | PPO epoch: 14
+2023-09-21 14:44:14,799 | INFO | average episode rewards: -5.937452429329713
+2023-09-21 14:44:15,093 | INFO | PPO epoch: 15
+2023-09-21 14:44:16,314 | INFO | average episode rewards: -5.859606695803003
+2023-09-21 14:44:16,672 | INFO | PPO epoch: 16
+2023-09-21 14:44:17,887 | INFO | average episode rewards: -5.676640589709954
+2023-09-21 14:44:18,195 | INFO | PPO epoch: 17
+2023-09-21 14:44:19,419 | INFO | average episode rewards: -5.387011686028222
+2023-09-21 14:44:19,744 | INFO | PPO epoch: 18
+2023-09-21 14:44:20,956 | INFO | average episode rewards: -5.776525081077417
+2023-09-21 14:44:21,245 | INFO | PPO epoch: 19
+2023-09-21 14:44:22,450 | INFO | average episode rewards: -5.472712473588778
+2023-09-21 14:44:22,805 | INFO | PPO epoch: 20
+2023-09-21 14:44:24,005 | INFO | average episode rewards: -5.2392058947750675
+2023-09-21 14:44:24,295 | INFO | PPO epoch: 21
+2023-09-21 14:44:25,506 | INFO | average episode rewards: -6.096322011961469
+2023-09-21 14:44:25,794 | INFO | PPO epoch: 22
+2023-09-21 14:44:27,000 | INFO | average episode rewards: -5.723285307642029
+2023-09-21 14:44:27,288 | INFO | PPO epoch: 23
+2023-09-21 14:44:28,511 | INFO | average episode rewards: -5.781585879501909
+2023-09-21 14:44:28,864 | INFO | PPO epoch: 24
+2023-09-21 14:44:30,132 | INFO | average episode rewards: -5.404026350685467
+2023-09-21 14:44:30,459 | INFO | PPO epoch: 25
+2023-09-21 14:44:31,703 | INFO | average episode rewards: -5.59045952709884
+2023-09-21 14:44:32,024 | INFO | PPO epoch: 26
+2023-09-21 14:44:33,242 | INFO | average episode rewards: -5.630707363056575
+2023-09-21 14:44:33,556 | INFO | PPO epoch: 27
+2023-09-21 14:44:34,826 | INFO | average episode rewards: -5.025507696244329
+2023-09-21 14:44:35,217 | INFO | PPO epoch: 28
+2023-09-21 14:44:36,527 | INFO | average episode rewards: -5.972768697684134
+2023-09-21 14:44:36,915 | INFO | PPO epoch: 29
+2023-09-21 14:44:38,185 | INFO | average episode rewards: -5.367618255026877
+2023-09-21 14:44:38,477 | INFO | PPO epoch: 30
+2023-09-21 14:44:39,777 | INFO | average episode rewards: -5.140174826735197
+2023-09-21 14:44:40,114 | INFO | PPO epoch: 31
+2023-09-21 14:44:41,363 | INFO | average episode rewards: -4.981673487006734
+2023-09-21 14:44:41,729 | INFO | PPO epoch: 32
+2023-09-21 14:44:42,991 | INFO | average episode rewards: -5.127025520256155
+2023-09-21 14:44:43,300 | INFO | PPO epoch: 33
+2023-09-21 14:44:44,525 | INFO | average episode rewards: -5.3419723138993955
+2023-09-21 14:44:44,813 | INFO | PPO epoch: 34
+2023-09-21 14:44:46,031 | INFO | average episode rewards: -5.30891222853752
+2023-09-21 14:44:46,318 | INFO | PPO epoch: 35
+2023-09-21 14:44:47,529 | INFO | average episode rewards: -5.684426722799187
+2023-09-21 14:44:47,885 | INFO | PPO epoch: 36
+2023-09-21 14:44:49,138 | INFO | average episode rewards: -4.8530052231381
+2023-09-21 14:44:49,477 | INFO | PPO epoch: 37
+2023-09-21 14:44:50,708 | INFO | average episode rewards: -5.166183728959908
+2023-09-21 14:44:50,999 | INFO | PPO epoch: 38
+2023-09-21 14:44:52,218 | INFO | average episode rewards: -4.636682895422886
+2023-09-21 14:44:52,507 | INFO | PPO epoch: 39
+2023-09-21 14:44:53,753 | INFO | average episode rewards: -4.71075184322738
+2023-09-21 14:44:54,224 | INFO | PPO epoch: 40
+2023-09-21 14:44:55,455 | INFO | average episode rewards: -5.1569811687949425
+2023-09-21 14:44:55,763 | INFO | PPO epoch: 41
+2023-09-21 14:44:57,035 | INFO | average episode rewards: -4.79638571747526
+2023-09-21 14:44:57,336 | INFO | PPO epoch: 42
+2023-09-21 14:44:58,561 | INFO | average episode rewards: -4.835689811830781
+2023-09-21 14:44:58,849 | INFO | PPO epoch: 43
+2023-09-21 14:45:00,107 | INFO | average episode rewards: -4.282140943069902
+2023-09-21 14:45:00,494 | INFO | PPO epoch: 44
+2023-09-21 14:45:01,763 | INFO | average episode rewards: -4.510575011972921
+2023-09-21 14:45:02,050 | INFO | PPO epoch: 45
+2023-09-21 14:45:03,255 | INFO | average episode rewards: -4.3932612586966036
+2023-09-21 14:45:03,540 | INFO | PPO epoch: 46
+2023-09-21 14:45:04,737 | INFO | average episode rewards: -4.474887797060449
+2023-09-21 14:45:05,021 | INFO | PPO epoch: 47
+2023-09-21 14:45:06,216 | INFO | average episode rewards: -4.7754210740039325
+2023-09-21 14:45:06,608 | INFO | PPO epoch: 48
+2023-09-21 14:45:07,833 | INFO | average episode rewards: -4.3594883025611475
+2023-09-21 14:45:08,129 | INFO | PPO epoch: 49
+2023-09-21 14:45:09,351 | INFO | average episode rewards: -4.323283747093484
+2023-09-21 14:45:09,641 | INFO | PPO epoch: 50
+2023-09-21 14:45:10,858 | INFO | average episode rewards: -4.232465984200838
+2023-09-21 14:45:11,172 | INFO | PPO epoch: 51
+2023-09-21 14:45:12,394 | INFO | average episode rewards: -4.255824298900807
+2023-09-21 14:45:12,744 | INFO | PPO epoch: 52
+2023-09-21 14:45:14,001 | INFO | average episode rewards: -4.308886162348113
+2023-09-21 14:45:14,401 | INFO | PPO epoch: 53
+2023-09-21 14:45:15,710 | INFO | average episode rewards: -4.323119418666096
+2023-09-21 14:45:16,027 | INFO | PPO epoch: 54
+2023-09-21 14:45:17,249 | INFO | average episode rewards: -4.257481836218371
+2023-09-21 14:45:17,541 | INFO | PPO epoch: 55
+2023-09-21 14:45:18,771 | INFO | average episode rewards: -4.084458802543108
+2023-09-21 14:45:19,127 | INFO | PPO epoch: 56
+2023-09-21 14:45:20,362 | INFO | average episode rewards: -4.169530096280342
+2023-09-21 14:45:20,654 | INFO | PPO epoch: 57
+2023-09-21 14:45:21,872 | INFO | average episode rewards: -4.137685485908213
+2023-09-21 14:45:22,162 | INFO | PPO epoch: 58
+2023-09-21 14:45:23,372 | INFO | average episode rewards: -4.249553402858064
+2023-09-21 14:45:23,664 | INFO | PPO epoch: 59
+2023-09-21 14:45:24,873 | INFO | average episode rewards: -3.964422105153224
+2023-09-21 14:45:25,227 | INFO | PPO epoch: 60
+2023-09-21 14:45:26,440 | INFO | average episode rewards: -4.064252007168193
+2023-09-21 14:45:26,730 | INFO | PPO epoch: 61
+2023-09-21 14:45:27,941 | INFO | average episode rewards: -3.8129484918542738
+2023-09-21 14:45:28,243 | INFO | PPO epoch: 62
+2023-09-21 14:45:29,453 | INFO | average episode rewards: -4.10846290588343
+2023-09-21 14:45:29,759 | INFO | PPO epoch: 63
+2023-09-21 14:45:30,966 | INFO | average episode rewards: -4.100469735873232
+2023-09-21 14:45:31,319 | INFO | PPO epoch: 64
+2023-09-21 14:45:32,535 | INFO | average episode rewards: -3.988986004465981
+2023-09-21 14:45:32,823 | INFO | PPO epoch: 65
+2023-09-21 14:45:34,042 | INFO | average episode rewards: -4.172985700446049
+2023-09-21 14:45:34,329 | INFO | PPO epoch: 66
+2023-09-21 14:45:35,544 | INFO | average episode rewards: -3.9492351237683425
+2023-09-21 14:45:35,834 | INFO | PPO epoch: 67
+2023-09-21 14:45:37,055 | INFO | average episode rewards: -4.037028037636843
+2023-09-21 14:45:37,408 | INFO | PPO epoch: 68
+2023-09-21 14:45:38,632 | INFO | average episode rewards: -3.8717523354590213
+2023-09-21 14:45:38,919 | INFO | PPO epoch: 69
+2023-09-21 14:45:40,139 | INFO | average episode rewards: -3.6380695252078232
+2023-09-21 14:45:40,427 | INFO | PPO epoch: 70
+2023-09-21 14:45:41,644 | INFO | average episode rewards: -3.7535559594569334
+2023-09-21 14:45:41,932 | INFO | PPO epoch: 71
+2023-09-21 14:45:43,145 | INFO | average episode rewards: -3.717212148282896
+2023-09-21 14:45:43,497 | INFO | PPO epoch: 72
+2023-09-21 14:45:44,707 | INFO | average episode rewards: -3.8200672704970398
+2023-09-21 14:45:44,997 | INFO | PPO epoch: 73
+2023-09-21 14:45:46,217 | INFO | average episode rewards: -3.8056665582783458
+2023-09-21 14:45:46,505 | INFO | PPO epoch: 74
+2023-09-21 14:45:47,727 | INFO | average episode rewards: -3.671062882379162
+2023-09-21 14:45:48,017 | INFO | PPO epoch: 75
+2023-09-21 14:45:49,240 | INFO | average episode rewards: -3.6105846328232505
+2023-09-21 14:45:49,601 | INFO | PPO epoch: 76
+2023-09-21 14:45:50,822 | INFO | average episode rewards: -3.5088284661623703
+2023-09-21 14:45:51,111 | INFO | PPO epoch: 77
+2023-09-21 14:45:52,331 | INFO | average episode rewards: -3.463422440033662
+2023-09-21 14:45:52,619 | INFO | PPO epoch: 78
+2023-09-21 14:45:53,830 | INFO | average episode rewards: -3.390544654137758
+2023-09-21 14:45:54,118 | INFO | PPO epoch: 79
+2023-09-21 14:45:55,336 | INFO | average episode rewards: -3.5680100887619566
+2023-09-21 14:45:55,688 | INFO | PPO epoch: 80
+2023-09-21 14:45:56,900 | INFO | average episode rewards: -3.352304634466086
+2023-09-21 14:45:57,190 | INFO | PPO epoch: 81
+2023-09-21 14:45:58,413 | INFO | average episode rewards: -3.308571335618333
+2023-09-21 14:45:58,704 | INFO | PPO epoch: 82
+2023-09-21 14:45:59,933 | INFO | average episode rewards: -3.363160211521526
+2023-09-21 14:46:00,222 | INFO | PPO epoch: 83
+2023-09-21 14:46:01,427 | INFO | average episode rewards: -3.336297793707316
+2023-09-21 14:46:01,779 | INFO | PPO epoch: 84
+2023-09-21 14:46:03,000 | INFO | average episode rewards: -3.1232256799079816
+2023-09-21 14:46:03,288 | INFO | PPO epoch: 85
+2023-09-21 14:46:04,505 | INFO | average episode rewards: -2.893729036215459
+2023-09-21 14:46:04,795 | INFO | PPO epoch: 86
+2023-09-21 14:46:06,015 | INFO | average episode rewards: -2.7299993584978868
+2023-09-21 14:46:06,303 | INFO | PPO epoch: 87
+2023-09-21 14:46:07,514 | INFO | average episode rewards: -2.615799076306543
+2023-09-21 14:46:07,869 | INFO | PPO epoch: 88
+2023-09-21 14:46:09,112 | INFO | average episode rewards: -2.207611983904887
+2023-09-21 14:46:09,409 | INFO | PPO epoch: 89
+2023-09-21 14:46:10,650 | INFO | average episode rewards: -1.9580470846103188
+2023-09-21 14:46:10,939 | INFO | PPO epoch: 90
+2023-09-21 14:46:12,155 | INFO | average episode rewards: -1.6758821685748795
+2023-09-21 14:46:12,446 | INFO | PPO epoch: 91
+2023-09-21 14:46:13,662 | INFO | average episode rewards: -1.1631944322504268
+2023-09-21 14:46:14,014 | INFO | PPO epoch: 92
+2023-09-21 14:46:15,230 | INFO | average episode rewards: -1.1940382901557742
+2023-09-21 14:46:15,519 | INFO | PPO epoch: 93
+2023-09-21 14:46:16,730 | INFO | average episode rewards: -1.186452953358785
+2023-09-21 14:46:17,020 | INFO | PPO epoch: 94
+2023-09-21 14:46:18,232 | INFO | average episode rewards: -1.1377638725134356
+2023-09-21 14:46:18,523 | INFO | PPO epoch: 95
+2023-09-21 14:46:19,759 | INFO | average episode rewards: -1.2804482369598744
+2023-09-21 14:46:20,116 | INFO | PPO epoch: 96
+2023-09-21 14:46:21,333 | INFO | average episode rewards: -1.2031686884665314
+2023-09-21 14:46:21,622 | INFO | PPO epoch: 97
+2023-09-21 14:46:22,836 | INFO | average episode rewards: -1.217157130940351
+2023-09-21 14:46:23,124 | INFO | PPO epoch: 98
+2023-09-21 14:46:24,343 | INFO | average episode rewards: -1.0281718137516214
+2023-09-21 14:46:24,632 | INFO | PPO epoch: 99
+2023-09-21 14:46:25,864 | INFO | average episode rewards: -1.0543439617908212
+2023-09-21 14:46:26,218 | INFO | PPO epoch: 100
+2023-09-21 14:46:27,457 | INFO | average episode rewards: -0.9634774535826106
 </pre></div>
 </div>
 </div>
@@ -1273,7 +1309,7 @@ log-probability: -0.3060244917869568
 </div>
 </section>
 <section id="loading-models">
-<h2>Loading Models<a class="headerlink" href="#loading-models" title="Permalink to this heading">#</a></h2>
+<h2>Loading Models<a class="headerlink" href="#loading-models" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../models/actor.pth&quot;</span><span class="p">)</span>
@@ -1293,6 +1329,18 @@ log-probability: -0.3060244917869568
     (layer2): Linear(in_features=64, out_features=64, bias=True)
     (layer3): Linear(in_features=64, out_features=1, bias=True)
   )
+  (dist_param1): Sequential(
+    (0): Linear(in_features=1, out_features=16, bias=True)
+    (1): ReLU(inplace=True)
+    (2): Linear(in_features=16, out_features=1, bias=True)
+    (3): Sigmoid()
+  )
+  (dist_param2): Sequential(
+    (0): Linear(in_features=1, out_features=16, bias=True)
+    (1): ReLU(inplace=True)
+    (2): Linear(in_features=16, out_features=1, bias=True)
+    (3): Sigmoid()
+  )
 )
 Critic(
   (mlp): MLP(
@@ -1307,7 +1355,7 @@ Critic(
 </div>
 </section>
 <section id="performance-of-the-trained-agent">
-<h2>Performance of the Trained Agent<a class="headerlink" href="#performance-of-the-trained-agent" title="Permalink to this heading">#</a></h2>
+<h2>Performance of the Trained Agent<a class="headerlink" href="#performance-of-the-trained-agent" title="Permalink to this headline">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
