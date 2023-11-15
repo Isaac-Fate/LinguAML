@@ -379,7 +379,12 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-configuration">Action Configuration</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-action">Single Action</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-action">Single Action</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#direct-construction-and-conversion-to-hyperparameter-configuration">Direct Construction and Conversion to Hyperparameter Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construction-from-hyperparameter-configuration">Construction from Hyperparameter Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-pytorch-tensors">To PyTorch Tensors</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batched-actions">Batched Actions</a></li>
 </ul>
             </nav>
@@ -395,8 +400,8 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="action">
 <h1>Action<a class="headerlink" href="#action" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
-<li><p>Numeric hyperparameter <span class="math notranslate nohighlight">\(\iff\)</span> Continuous action</p></li>
-<li><p>Categorical hyperparameter <span class="math notranslate nohighlight">\(\iff\)</span> Discrete action</p></li>
+<li><p>Numeric hyperparameter <span class="math notranslate nohighlight">\(\iff\)</span> Continuous action <span class="math notranslate nohighlight">\([0, 1]\)</span></p></li>
+<li><p>Categorical hyperparameter <span class="math notranslate nohighlight">\(\iff\)</span> Discrete action <span class="math notranslate nohighlight">\(0, 1, 2, \ldots\)</span></p></li>
 </ul>
 <section id="action-configuration">
 <h2>Action Configuration<a class="headerlink" href="#action-configuration" title="Permalink to this heading">#</a></h2>
@@ -421,6 +426,8 @@ document.write(`
 </section>
 <section id="single-action">
 <h2>Single Action<a class="headerlink" href="#single-action" title="Permalink to this heading">#</a></h2>
+<section id="direct-construction-and-conversion-to-hyperparameter-configuration">
+<h3>Direct Construction and Conversion to Hyperparameter Configuration<a class="headerlink" href="#direct-construction-and-conversion-to-hyperparameter-configuration" title="Permalink to this heading">#</a></h3>
 <p>Construct an action from a dictionary:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -471,6 +478,67 @@ name2bounds={&#39;C&#39;: Bounds(min=0.1, max=100.0), &#39;gamma&#39;: Bounds(mi
 </div>
 </div>
 </div>
+</section>
+<section id="construction-from-hyperparameter-configuration">
+<h3>Construction from Hyperparameter Configuration<a class="headerlink" href="#construction-from-hyperparameter-configuration" title="Permalink to this heading">#</a></h3>
+<p>Conversely, suppose you have a hyperparameter configuration setting:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hp_config</span> <span class="o">=</span> <span class="n">Family</span><span class="o">.</span><span class="n">SVC</span><span class="o">.</span><span class="n">hp</span><span class="p">()</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span>
+    <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="s2">&quot;tol&quot;</span><span class="p">:</span><span class="mf">1e-3</span><span class="p">,</span>
+    <span class="s2">&quot;kernel&quot;</span><span class="p">:</span> <span class="s2">&quot;rbf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;decision_function_shape&quot;</span><span class="p">:</span> <span class="s2">&quot;ovr&quot;</span>
+<span class="p">})</span>
+
+<span class="n">hp_config</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>SVCConfig(C=10.0, kernel=&#39;rbf&#39;, gamma=0.01, tol=0.001, decision_function_shape=&#39;ovr&#39;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>To construct an action from this hyperparameter configuration setting, you can use the following code:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">action</span> <span class="o">=</span> <span class="n">Action</span><span class="o">.</span><span class="n">from_hp_config</span><span class="p">(</span><span class="n">hp_config</span><span class="p">)</span>
+
+<span class="n">action</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;C&#39;: 0.0990990990990991,
+ &#39;gamma&#39;: -0.0009009009009009009,
+ &#39;tol&#39;: 1.0,
+ &#39;kernel&#39;: 2,
+ &#39;decision_function_shape&#39;: 1}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;original:</span><span class="se">\t</span><span class="si">{</span><span class="n">hp_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recovered:</span><span class="se">\t</span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">to_hp_config</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>original:	C=10.0 kernel=&#39;rbf&#39; gamma=0.01 tol=0.001 decision_function_shape=&#39;ovr&#39;
+recovered:	C=10.0 kernel=&#39;rbf&#39; gamma=0.009999999999999995 tol=0.001 decision_function_shape=&#39;ovr&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<p>Close enough.</p>
+</section>
+<section id="to-pytorch-tensors">
+<h3>To PyTorch Tensors<a class="headerlink" href="#to-pytorch-tensors" title="Permalink to this heading">#</a></h3>
 <p>Convert the action to a dictionary that maps hyperparameter names to tensors so that you can feed it to PyTorch’s neural network:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -479,15 +547,16 @@ name2bounds={&#39;C&#39;: Bounds(min=0.1, max=100.0), &#39;gamma&#39;: Bounds(mi
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;C&#39;: tensor(0.1000),
- &#39;gamma&#39;: tensor(0.5000),
- &#39;tol&#39;: tensor(0.1000),
- &#39;kernel&#39;: tensor(0.),
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;C&#39;: tensor(0.0991),
+ &#39;gamma&#39;: tensor(-0.0009),
+ &#39;tol&#39;: tensor(1.),
+ &#39;kernel&#39;: tensor(2.),
  &#39;decision_function_shape&#39;: tensor(1.)}
 </pre></div>
 </div>
 </div>
 </div>
+</section>
 </section>
 <section id="batched-actions">
 <h2>Batched Actions<a class="headerlink" href="#batched-actions" title="Permalink to this heading">#</a></h2>
@@ -639,7 +708,12 @@ name2bounds={&#39;C&#39;: Bounds(min=0.1, max=100.0), &#39;gamma&#39;: Bounds(mi
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-configuration">Action Configuration</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-action">Single Action</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-action">Single Action</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#direct-construction-and-conversion-to-hyperparameter-configuration">Direct Construction and Conversion to Hyperparameter Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construction-from-hyperparameter-configuration">Construction from Hyperparameter Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-pytorch-tensors">To PyTorch Tensors</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batched-actions">Batched Actions</a></li>
 </ul>
   </nav></div>

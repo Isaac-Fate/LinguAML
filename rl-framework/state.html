@@ -353,7 +353,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -369,6 +371,22 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-configuration">State Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-unit">State Unit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-state">Single State</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-actions-and-rewards">From Actions and Rewards</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-performance-results">From Performance Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-pytorch-tensor">To PyTorch Tensor</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batched-states">Batched States</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -380,288 +398,493 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="state">
 <h1>State<a class="headerlink" href="#state" title="Permalink to this heading">#</a></h1>
+<section id="state-configuration">
+<h2>State Configuration<a class="headerlink" href="#state-configuration" title="Permalink to this heading">#</a></h2>
+<p>Before creating <code class="docutils literal notranslate"><span class="pre">State</span></code> or <code class="docutils literal notranslate"><span class="pre">BatchedStates</span></code> instances, you need to set up the abstract class <code class="docutils literal notranslate"><span class="pre">StateConfig</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Self</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ndarray</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">StateConfig</span>
 
-<span class="kn">from</span> <span class="nn">linguaml.tolearn.performance</span> <span class="kn">import</span> <span class="n">PerformanceResult</span>
-<span class="kn">from</span> <span class="nn">linguaml.tolearn.families.base</span> <span class="kn">import</span> <span class="n">Family</span>
-<span class="kn">from</span> <span class="nn">linguaml.tolearn.hp</span> <span class="kn">import</span> <span class="n">HPConfig</span><span class="p">,</span> <span class="n">CategoricalHP</span>
-<span class="kn">from</span> <span class="nn">linguaml.tolearn.hp.bounds</span> <span class="kn">import</span> <span class="n">NumericHPBounds</span>
-<span class="kn">from</span> <span class="nn">linguaml.rl.state.config</span> <span class="kn">import</span> <span class="n">StateConfig</span>
-
-<span class="n">StateConfig</span><span class="o">.</span><span class="n">n_time_steps</span> <span class="o">=</span> <span class="mi">2</span>
-
-<span class="k">def</span> <span class="nf">encode_hp_config_and_accuracy</span><span class="p">(</span>
-        <span class="n">hp_config</span><span class="p">:</span> <span class="n">HPConfig</span><span class="p">,</span> 
-        <span class="n">accuracy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">numeric_hp_bounds</span><span class="p">:</span> <span class="n">NumericHPBounds</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encode a hyperparameter configuration and its accuracy into a row of the state matrix.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    hp_config : HPConfig</span>
-<span class="sd">        Hyperparameter configuration.</span>
-<span class="sd">    accuracy : float</span>
-<span class="sd">        Accuracy of the hyperparameter configuration on the validation set.</span>
-<span class="sd">    numeric_hp_bounds : NumericHPBounds</span>
-<span class="sd">        The bounds of the numerical hyperparameters.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ndarray</span>
-<span class="sd">        A row of the state matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="c1"># Continuous part</span>
-    <span class="c1"># Normalization of numerical hyperparameters</span>
-    <span class="c1"># Each numerical hyperparameter is normalized to [0, 1]</span>
-    <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">hp_name</span> <span class="ow">in</span> <span class="n">hp_config</span><span class="o">.</span><span class="n">numeric_hp_names</span><span class="p">():</span>
-        <span class="n">hp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">hp_config</span><span class="p">,</span> <span class="n">hp_name</span><span class="p">)</span>
-        <span class="n">bounds</span> <span class="o">=</span> <span class="n">numeric_hp_bounds</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">(</span><span class="n">hp_name</span><span class="p">)</span>
-        <span class="n">entry</span> <span class="o">=</span> <span class="p">(</span><span class="n">hp</span> <span class="o">-</span> <span class="n">bounds</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="n">bounds</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
-        <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-    <span class="n">continuous_part</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
-    
-    <span class="c1"># Discrete part</span>
-    <span class="c1"># One-hot encoding vectors of categorical hyperparameters</span>
-    <span class="n">one_hot_arrays</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">hp_name</span> <span class="ow">in</span> <span class="n">hp_config</span><span class="o">.</span><span class="n">categorical_hp_names</span><span class="p">():</span>
-        <span class="n">hp_value</span><span class="p">:</span> <span class="n">CategoricalHP</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">hp_config</span><span class="p">,</span> <span class="n">hp_name</span><span class="p">)</span>
-        <span class="n">one_hot_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hp_value</span><span class="o">.</span><span class="n">one_hot</span><span class="p">)</span>
-    <span class="n">discrete_part</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">one_hot_arrays</span><span class="p">)</span>
-    
-    <span class="c1"># Reward</span>
-    <span class="c1"># It is a singleton array containing the accuracy</span>
-    <span class="n">reward_singleton_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">accuracy</span><span class="p">])</span>
-    
-    <span class="c1"># Concatenate continuous part, discrete part, and accuracy</span>
-    <span class="n">encoded_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">continuous_part</span><span class="p">,</span> <span class="n">discrete_part</span><span class="p">,</span> <span class="n">reward_singleton_array</span><span class="p">))</span>
-    
-    <span class="k">return</span> <span class="n">encoded_array</span>
-
-<span class="k">def</span> <span class="nf">encode_performance_result</span><span class="p">(</span>
-        <span class="n">performance_result</span><span class="p">:</span> <span class="n">PerformanceResult</span><span class="p">,</span>
-        <span class="n">numeric_hp_bounds</span><span class="p">:</span> <span class="n">NumericHPBounds</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encode a performance result into a row of the state matrix.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    performance_result : PerformanceResult</span>
-<span class="sd">        Performance result.</span>
-<span class="sd">    numeric_hp_bounds : NumericHPBounds</span>
-<span class="sd">        The bounds of the numerical hyperparameters.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ndarray</span>
-<span class="sd">        A row of the state matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="n">hp_config</span> <span class="o">=</span> <span class="n">performance_result</span><span class="o">.</span><span class="n">hp_config</span>
-    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">performance_result</span><span class="o">.</span><span class="n">accuracy</span>
-    
-    <span class="k">return</span> <span class="n">encode_hp_config_and_accuracy</span><span class="p">(</span><span class="n">hp_config</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">numeric_hp_bounds</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">decode_state_row</span><span class="p">(</span>
-        <span class="n">encoded_array</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span> 
-        <span class="n">family</span><span class="p">:</span> <span class="n">Family</span><span class="p">,</span> 
-        <span class="n">numeric_hp_bounds</span><span class="p">:</span> <span class="n">NumericHPBounds</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HPConfig</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decodes a row of the state matrix.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    encoded_array : ndarray</span>
-<span class="sd">        A row of the state matrix.</span>
-<span class="sd">    family : Family</span>
-<span class="sd">        The family of models.</span>
-<span class="sd">    numeric_hp_bounds : NumericHPBounds</span>
-<span class="sd">        The bounds of the numerical hyperparameters.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    tuple[HPConfig, float]</span>
-<span class="sd">        The hyperparameter configuration and the accuracy.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="c1"># Hyperparameters</span>
-    <span class="n">hps</span> <span class="o">=</span> <span class="p">{}</span>
-    
-    <span class="c1"># Pointer to the current index in the encoded array</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-    
-    <span class="c1"># Decode continuous part</span>
-    <span class="k">for</span> <span class="n">hp_name</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">hp</span><span class="p">()</span><span class="o">.</span><span class="n">numeric_hp_names</span><span class="p">():</span>
-        <span class="n">bounds</span> <span class="o">=</span> <span class="n">numeric_hp_bounds</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">(</span><span class="n">hp_name</span><span class="p">)</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">encoded_array</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>
-        
-        <span class="c1"># Recover the original value</span>
-        <span class="n">hp</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="n">bounds</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="o">+</span> <span class="n">bounds</span><span class="o">.</span><span class="n">min</span>
-        <span class="n">hps</span><span class="p">[</span><span class="n">hp_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">hp</span>
-        
-        <span class="c1"># Update the pointer</span>
-        <span class="n">start</span> <span class="o">+=</span> <span class="mi">1</span>
-    
-    <span class="c1"># Decode discrete part</span>
-    <span class="k">for</span> <span class="n">hp_name</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">hp</span><span class="p">()</span><span class="o">.</span><span class="n">categorical_hp_names</span><span class="p">():</span>
-        <span class="n">n_levels</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">hp</span><span class="p">()</span><span class="o">.</span><span class="n">n_levels_in_category</span><span class="p">(</span><span class="n">hp_name</span><span class="p">)</span>
-        <span class="n">one_hot</span> <span class="o">=</span> <span class="n">encoded_array</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">n_levels</span><span class="p">]</span>
-        <span class="n">hp_type</span><span class="p">:</span> <span class="n">CategoricalHP</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">hp</span><span class="p">()</span><span class="o">.</span><span class="n">hp_type</span><span class="p">(</span><span class="n">hp_name</span><span class="p">)</span>
-        
-        <span class="c1"># Recover the original value</span>
-        <span class="n">hp</span> <span class="o">=</span> <span class="n">hp_type</span><span class="o">.</span><span class="n">from_one_hot</span><span class="p">(</span><span class="n">one_hot</span><span class="p">)</span>
-        <span class="n">hps</span><span class="p">[</span><span class="n">hp_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">hp</span>
-        
-        <span class="c1"># Update the pointer</span>
-        <span class="n">start</span> <span class="o">+=</span> <span class="n">n_levels</span>
-        
-    <span class="c1"># Recover the hyperparameter configuration</span>
-    <span class="n">hp_config</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">hp</span><span class="p">()(</span><span class="o">**</span><span class="n">hps</span><span class="p">)</span>
-    
-    <span class="c1"># Decode reward</span>
-    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">encoded_array</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>
-    
-    <span class="k">return</span> <span class="n">hp_config</span><span class="p">,</span> <span class="n">accuracy</span>
-    
-<span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">StateConfig</span><span class="p">):</span>
-    
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
-        
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span>
-    
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_performance_results</span><span class="p">(</span>
-            <span class="bp">cls</span><span class="p">,</span> 
-            <span class="n">performance_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PerformanceResult</span><span class="p">],</span>
-            <span class="n">numeric_hp_bounds</span><span class="p">:</span> <span class="n">NumericHPBounds</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-        
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">performance_results</span><span class="p">)</span> <span class="o">==</span> <span class="bp">cls</span><span class="o">.</span><span class="n">n_time_steps</span><span class="p">,</span>\
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">n_time_steps</span><span class="si">}</span><span class="s2"> performance results, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">performance_results</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        
-        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-            <span class="n">encode_performance_result</span><span class="p">(</span><span class="n">performance_result</span><span class="p">,</span> <span class="n">numeric_hp_bounds</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">performance_result</span> <span class="ow">in</span> <span class="n">performance_results</span>
-        <span class="p">])</span>
-        
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">to_performance_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">:</span> <span class="n">Family</span><span class="p">,</span> <span class="n">numeric_hp_bounds</span><span class="p">:</span> <span class="n">NumericHPBounds</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PerformanceResult</span><span class="p">]:</span>
-        
-        <span class="n">performance_results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">encoded_array</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
-            <span class="n">hp_config</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="n">decode_state_row</span><span class="p">(</span><span class="n">encoded_array</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">numeric_hp_bounds</span><span class="p">)</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">PerformanceResult</span><span class="p">(</span>
-                <span class="n">hp_config</span><span class="o">=</span><span class="n">hp_config</span><span class="p">,</span>
-                <span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">performance_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            
-        <span class="k">return</span> <span class="n">performance_results</span>
-        
-    
-    <span class="k">def</span> <span class="nf">to_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    
- 
+<span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span> <span class="o">=</span> <span class="mi">5</span>
 </pre></div>
 </div>
 </div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">lookback</span></code> attribute is the number of hyperparameters the agent will look back before selecting an action.</p>
+</section>
+<section id="state-unit">
+<h2>State Unit<a class="headerlink" href="#state-unit" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.action</span> <span class="kn">import</span> <span class="n">ActionConfig</span><span class="p">,</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.family</span> <span class="kn">import</span> <span class="n">Family</span>
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.hp.bounds</span> <span class="kn">import</span> <span class="n">NumericHPBounds</span>
+<span class="kn">from</span> <span class="nn">rich</span> <span class="kn">import</span> <span class="nb">print</span>
 
-<span class="n">result1</span> <span class="o">=</span> <span class="n">PerformanceResult</span><span class="p">(</span>
-    <span class="n">hp_config</span><span class="o">=</span><span class="n">SVCFamily</span><span class="o">.</span><span class="n">hp</span><span class="p">()(</span>
-        <span class="n">C</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">tol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-        <span class="n">gamma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-        <span class="n">decision_function_shape</span><span class="o">=</span><span class="s2">&quot;ovo&quot;</span>
-    <span class="p">),</span>
-    <span class="n">accuracy</span><span class="o">=</span><span class="mf">0.6</span>
-<span class="p">)</span>
 
-<span class="n">result2</span> <span class="o">=</span> <span class="n">PerformanceResult</span><span class="p">(</span>
-    <span class="n">hp_config</span><span class="o">=</span><span class="n">SVCFamily</span><span class="o">.</span><span class="n">hp</span><span class="p">()(</span>
-        <span class="n">C</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">gamma</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;rbf&quot;</span><span class="p">,</span>
-        <span class="n">decision_function_shape</span><span class="o">=</span><span class="s2">&quot;ovr&quot;</span>
-    <span class="p">),</span>
+<span class="n">ActionConfig</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="o">.</span><span class="n">SVC</span>
+<span class="n">ActionConfig</span><span class="o">.</span><span class="n">numeric_hp_bounds</span> <span class="o">=</span> <span class="n">NumericHPBounds</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+    <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="n">action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">({</span>
+    <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;kernel&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;decision_function_shape&quot;</span><span class="p">:</span> <span class="mi">1</span>
+<span class="p">})</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">{</span><span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span>, <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5</span>, <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span>, <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>, <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span><span style="font-weight: bold">}</span>
+</pre>
+</div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">StateUnit</span>
+
+<span class="n">state_unit</span> <span class="o">=</span> <span class="n">StateUnit</span><span class="o">.</span><span class="n">from_action_and_reward</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">state_unit</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7</span><span style="font-weight: bold">]</span>
+</pre>
+</div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.tolearn.performance</span> <span class="kn">import</span> <span class="n">PerformanceResult</span>
+
+<span class="n">performance_result</span> <span class="o">=</span> <span class="n">PerformanceResult</span><span class="p">(</span>
+    <span class="n">hp_config</span><span class="o">=</span><span class="n">action</span><span class="o">.</span><span class="n">to_hp_config</span><span class="p">(),</span>
     <span class="n">accuracy</span><span class="o">=</span><span class="mf">0.7</span>
 <span class="p">)</span>
 
-<span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="o">.</span><span class="n">from_performance_results</span><span class="p">(</span>
-    <span class="n">performance_results</span><span class="o">=</span><span class="p">[</span><span class="n">result1</span><span class="p">,</span> <span class="n">result2</span><span class="p">],</span>
-    <span class="n">numeric_hp_bounds</span><span class="o">=</span><span class="n">NumericHPBounds</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span>
-        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
-        <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
-        <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
-    <span class="p">})</span>
-<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">performance_result</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+    <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10.090000000000002</span>,
+        <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'linear'</span>,
+        <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">50.050000000000004</span>,
+        <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.000109</span>,
+        <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovr'</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7</span>
+<span style="font-weight: bold">)</span>
+</pre>
+</div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">StateUnit</span><span class="o">.</span><span class="n">from_performance_result</span><span class="p">(</span><span class="n">performance_result</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7</span><span style="font-weight: bold">]</span>
+</pre>
+</div></div>
+</div>
+</section>
+<section id="single-state">
+<h2>Single State<a class="headerlink" href="#single-state" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.action</span> <span class="kn">import</span> <span class="n">BatchedActions</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="n">state</span>
+<span class="c1"># Generate random actions</span>
+<span class="n">actions</span> <span class="o">=</span> <span class="n">BatchedActions</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+    <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">),</span>
+    <span class="s2">&quot;kernel&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">),</span>
+    <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">),</span>
+    <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">),</span>
+    <span class="s2">&quot;decision_function_shape&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">)</span>
+<span class="p">})</span><span class="o">.</span><span class="n">to_actions</span><span class="p">()</span>
+
+<span class="c1"># Generate random rewards</span>
+<span class="n">rewards</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">StateConfig</span><span class="o">.</span><span class="n">lookback</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;actinos:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rewards: &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;__main__.State at 0x17acb46d0&gt;
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">actinos:
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="font-weight: bold">{</span>
+        <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.6825775208926002</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174258056224</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4780416403171879</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+    <span style="font-weight: bold">}</span>,
+    <span style="font-weight: bold">{</span>
+        <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265524742923316</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297263227121</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113457753771</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+    <span style="font-weight: bold">}</span>,
+    <span style="font-weight: bold">{</span>
+        <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4898338475826851</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.9900253689106882</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4375667352064053</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+    <span style="font-weight: bold">}</span>,
+    <span style="font-weight: bold">{</span>
+        <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4554767391166977</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806533636847161</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.8105868302619496</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>
+    <span style="font-weight: bold">}</span>,
+    <span style="font-weight: bold">{</span>
+        <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021318468338</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7601909534247265</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.18433109624367716</span>,
+        <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+    <span style="font-weight: bold">}</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">rewards: 
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122254</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390384</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50052495</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34659101</span><span style="font-weight: bold">]</span>
+</pre>
+</div></div>
+</div>
+<p>It is recommended to construct a <code class="docutils literal notranslate"><span class="pre">State</span></code> instance using the <code class="docutils literal notranslate"><span class="pre">from_actions_and_rewards</span></code> or <code class="docutils literal notranslate"><span class="pre">from_action_reward_pairs</span></code> class methods.</p>
+<section id="from-actions-and-rewards">
+<h3>From Actions and Rewards<a class="headerlink" href="#from-actions-and-rewards" title="Permalink to this heading">#</a></h3>
+<p>Construct a state via <code class="docutils literal notranslate"><span class="pre">from_actions_and_rewards</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">State</span>
+
+<span class="c1"># Construct a state</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="o">.</span><span class="n">from_actions_and_rewards</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
+
+<span class="c1"># Check that state&#39;s data</span>
+<span class="n">state</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[0.68257752, 0.13638174, 0.47804164, 0.        , 0.        ,
+        1.        , 0.        , 1.        , 0.        , 0.34778118],
+       [0.23265525, 0.10378297, 0.11241113, 1.        , 0.        ,
+        0.        , 0.        , 1.        , 0.        , 0.39122254],
+       [0.48983385, 0.99002537, 0.43756674, 0.        , 0.        ,
+        0.        , 1.        , 1.        , 0.        , 0.50390384],
+       [0.45547674, 0.11806534, 0.81058683, 0.        , 0.        ,
+        1.        , 0.        , 0.        , 1.        , 0.50052495],
+       [0.11504021, 0.76019095, 0.1843311 , 0.        , 1.        ,
+        0.        , 0.        , 1.        , 0.        , 0.34659101]])
+</pre></div>
+</div>
+</div>
+</div>
+<p>Construct a state via <code class="docutils literal notranslate"><span class="pre">from_action_reward_pairs</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">action_reward_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">action_reward_pairs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="font-weight: bold">(</span>
+        <span style="font-weight: bold">{</span>
+            <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.6825775208926002</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174258056224</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4780416403171879</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+        <span style="font-weight: bold">}</span>,
+        <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118005581027</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span>
+        <span style="font-weight: bold">{</span>
+            <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265524742923316</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297263227121</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113457753771</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+        <span style="font-weight: bold">}</span>,
+        <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122253937936624</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span>
+        <span style="font-weight: bold">{</span>
+            <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4898338475826851</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">3</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.9900253689106882</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4375667352064053</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+        <span style="font-weight: bold">}</span>,
+        <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390383582081</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span>
+        <span style="font-weight: bold">{</span>
+            <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4554767391166977</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806533636847161</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.8105868302619496</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>
+        <span style="font-weight: bold">}</span>,
+        <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5005249473431244</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="font-weight: bold">(</span>
+        <span style="font-weight: bold">{</span>
+            <span style="color: #008000; text-decoration-color: #008000">'C'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021318468338</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'kernel'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'gamma'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7601909534247265</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'tol'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.18433109624367716</span>,
+            <span style="color: #008000; text-decoration-color: #008000">'decision_function_shape'</span>: <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>
+        <span style="font-weight: bold">}</span>,
+        <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3465910074359839</span>
+    <span style="font-weight: bold">)</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="o">.</span><span class="n">to_tensor</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="o">.</span><span class="n">from_action_and_reward_pairs</span><span class="p">(</span><span class="n">action_reward_pairs</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensor([[0.0000, 0.0909, 0.0999, 1.0000, 0.0000, 0.0000, 0.0000, 1.0000, 0.0000,
-         0.6000],
-        [0.0991, 0.0000, 1.0000, 0.0000, 0.0000, 1.0000, 0.0000, 0.0000, 1.0000,
-         0.7000]])
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.68257752</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.47804164</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265525</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122254</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.48983385</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.99002537</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.43756674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390384</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.45547674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806534</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.81058683</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50052495</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.76019095</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843311</span>  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34659101</span><span style="font-weight: bold">]]</span>
+</pre>
+</div></div>
+</div>
+</section>
+<section id="from-performance-results">
+<h3>From Performance Results<a class="headerlink" href="#from-performance-results" title="Permalink to this heading">#</a></h3>
+<p>The internal implementation of <code class="docutils literal notranslate"><span class="pre">from_performance_results</span></code> first converts each <code class="docutils literal notranslate"><span class="pre">PerformanceResult</span></code> to actions and rewards, and then calls <code class="docutils literal notranslate"><span class="pre">from_actions_and_rewards</span></code>.</p>
+<p>Hence, it is recommended to use <code class="docutils literal notranslate"><span class="pre">from_actions_and_rewards</span></code> directly. But if the actions and rewards are not available, there is no choice but to use <code class="docutils literal notranslate"><span class="pre">from_performance_results</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">performance_results</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">PerformanceResult</span><span class="p">(</span>
+        <span class="n">hp_config</span><span class="o">=</span><span class="n">action</span><span class="o">.</span><span class="n">to_hp_config</span><span class="p">(),</span>
+        <span class="n">accuracy</span><span class="o">=</span><span class="n">reward</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span> <span class="ow">in</span> <span class="n">action_reward_pairs</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">performance_results</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[</span>
+    <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">68.28949433717075</span>,
+            <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'rbf'</span>,
+            <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">13.724536083798167</span>,
+            <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.00048326122391401604</span>,
+            <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovo'</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118005581027</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">23.342259218180395</span>,
+            <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'linear'</span>,
+            <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10.467918965963895</span>,
+            <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.00012128702323176233</span>,
+            <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovo'</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122253937936624</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">49.03440137351025</span>,
+            <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'sigmoid'</span>,
+            <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">99.00353435417775</span>,
+            <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0004431910678543413</span>,
+            <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovo'</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390383582081</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">45.60212623775811</span>,
+            <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'rbf'</span>,
+            <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">11.894727103210315</span>,
+            <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0008124809619593301</span>,
+            <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovr'</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5005249473431244</span>
+    <span style="font-weight: bold">)</span>,
+    <span style="color: #800080; text-decoration-color: #800080; font-weight: bold">PerformanceResult</span><span style="font-weight: bold">(</span>
+        <span style="color: #808000; text-decoration-color: #808000">hp_config</span>=<span style="color: #800080; text-decoration-color: #800080; font-weight: bold">SVCConfig</span><span style="font-weight: bold">(</span>
+            <span style="color: #808000; text-decoration-color: #808000">C</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">11.59251729714987</span>,
+            <span style="color: #808000; text-decoration-color: #808000">kernel</span>=<span style="color: #008000; text-decoration-color: #008000">'poly'</span>,
+            <span style="color: #808000; text-decoration-color: #808000">gamma</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">76.04307624713017</span>,
+            <span style="color: #808000; text-decoration-color: #808000">tol</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0001924877852812404</span>,
+            <span style="color: #808000; text-decoration-color: #808000">decision_function_shape</span>=<span style="color: #008000; text-decoration-color: #008000">'ovo'</span>
+        <span style="font-weight: bold">)</span>,
+        <span style="color: #808000; text-decoration-color: #808000">accuracy</span>=<span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3465910074359839</span>
+    <span style="font-weight: bold">)</span>
+<span style="font-weight: bold">]</span>
+</pre>
+</div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="o">.</span><span class="n">to_performance_results</span><span class="p">(</span>
-    <span class="n">SVCFamily</span><span class="p">,</span>
-    <span class="n">numeric_hp_bounds</span><span class="o">=</span><span class="n">NumericHPBounds</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span>
-        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
-        <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
-        <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">)</span>
-    <span class="p">})</span>      
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="o">.</span><span class="n">from_performance_results</span><span class="p">(</span><span class="n">performance_results</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[PerformanceResult(hp_config=SVCConfig(C=0.1, kernel=&#39;linear&#39;, gamma=0.010000000000000002, tol=0.01, decision_function_shape=&#39;ovo&#39;), accuracy=0.6),
- PerformanceResult(hp_config=SVCConfig(C=10.0, kernel=&#39;rbf&#39;, gamma=0.001, tol=0.1, decision_function_shape=&#39;ovr&#39;), accuracy=0.7)]
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.68257752</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.47804164</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265525</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122254</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.48983385</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.99002537</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.43756674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390384</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.45547674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806534</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.81058683</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50052495</span><span style="font-weight: bold">]</span>
+ <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.76019095</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843311</span>  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34659101</span><span style="font-weight: bold">]]</span>
+</pre>
+</div></div>
+</div>
+</section>
+<section id="to-pytorch-tensor">
+<h3>To PyTorch Tensor<a class="headerlink" href="#to-pytorch-tensor" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">to_tensor</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">tensor</span><span style="font-weight: bold">([[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.6826</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1364</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4780</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3478</span><span style="font-weight: bold">]</span>,
+        <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.2327</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1038</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1124</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3912</span><span style="font-weight: bold">]</span>,
+        <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4898</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.9900</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4376</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5039</span><span style="font-weight: bold">]</span>,
+        <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4555</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1181</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.8106</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5005</span><span style="font-weight: bold">]</span>,
+        <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1150</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7602</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3466</span><span style="font-weight: bold">]])</span>
+</pre>
+</div></div>
 </div>
+</section>
+</section>
+<section id="batched-states">
+<h2>Batched States<a class="headerlink" href="#batched-states" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">BatchedStates</span>
+
+<span class="n">batched_states</span> <span class="o">=</span> <span class="n">BatchedStates</span><span class="o">.</span><span class="n">from_states</span><span class="p">([</span><span class="n">state</span><span class="p">,</span> <span class="n">state</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">batched_states</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape: </span><span class="si">{</span><span class="n">batched_states</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">[[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.68257752</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.47804164</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265525</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122254</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.48983385</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.99002537</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.43756674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390384</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.45547674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806534</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.81058683</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50052495</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.76019095</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843311</span>  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34659101</span><span style="font-weight: bold">]]</span>
+
+ <span style="font-weight: bold">[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.68257752</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.13638174</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.47804164</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34778118</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.23265525</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.10378297</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11241113</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.39122254</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.48983385</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.99002537</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.43756674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50390384</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.45547674</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11806534</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.81058683</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.50052495</span><span style="font-weight: bold">]</span>
+  <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.11504021</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.76019095</span> <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843311</span>  <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.
+   <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0</span>.         <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.34659101</span><span style="font-weight: bold">]]]</span>
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">shape: <span style="font-weight: bold">(</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">2</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">5</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">10</span><span style="font-weight: bold">)</span>
+</pre>
+</div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">batched_states</span><span class="o">.</span><span class="n">to_tensor</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #800080; text-decoration-color: #800080; font-weight: bold">tensor</span><span style="font-weight: bold">([[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.6826</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1364</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4780</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3478</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.2327</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1038</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1124</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3912</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4898</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.9900</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4376</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5039</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4555</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1181</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.8106</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5005</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1150</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7602</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3466</span><span style="font-weight: bold">]]</span>,
+
+        <span style="font-weight: bold">[[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.6826</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1364</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4780</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3478</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.2327</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1038</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1124</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3912</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4898</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.9900</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4376</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5039</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.4555</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1181</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.8106</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.5005</span><span style="font-weight: bold">]</span>,
+         <span style="font-weight: bold">[</span><span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1150</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.7602</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.1843</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">1.0000</span>,
+          <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.0000</span>, <span style="color: #008080; text-decoration-color: #008080; font-weight: bold">0.3466</span><span style="font-weight: bold">]]])</span>
+</pre>
+</div></div>
+</div>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -718,6 +941,28 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-configuration">State Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#state-unit">State Unit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-state">Single State</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-actions-and-rewards">From Actions and Rewards</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-performance-results">From Performance Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-pytorch-tensor">To PyTorch Tensor</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batched-states">Batched States</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
