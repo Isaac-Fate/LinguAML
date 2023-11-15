@@ -1,0 +1,822 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Selecting Actions &#8212; LinguAML</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <link rel="shortcut icon" href="../_static/control-knobs.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="env.html" />
+    <link rel="prev" title="State" href="state.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="../index.html">
+      
+        <!-- `logo` is deprecated in Sphinx 4.0, so remove this when we stop supporting 3 -->
+        
+      
+      
+      <img src="../_static/library.jpg" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">LinguAML</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    LinguAML
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../preliminaries/index.html">
+   Preliminaries
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../preliminaries/ppo.html">
+     PPO
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../preliminaries/lstm.html">
+     LSTM
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
+   RL Framework
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="action.html">
+     Action
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="state.html">
+     State
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     Selecting Actions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="performance-result-buffer.html">
+     Performance Result Buffer
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<div class="menu-dropdown menu-dropdown-launch-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Launch interactive content">
+      <i class="fas fa-rocket"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://mybinder.org/v2/gh/Isaac-Fate/LinguAML/master?urlpath=tree/rl-framework/agent.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Binder"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="../_static/images/logo_binder.svg">
+  </span>
+<span class="headerbtn__text-container">Binder</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/Isaac-Fate/LinguAML"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/Isaac-Fate/LinguAML/issues/new?title=Issue%20on%20page%20%2Frl-framework/agent.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="../_sources/rl-framework/agent.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Selecting Actions
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#single-action">
+     Single Action
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#batched-actions">
+     Batched Actions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#log-probabilities">
+   Log-Probabilities
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#single-data">
+     Single Data
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#batched-data">
+     Batched Data
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Selecting Actions</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Selecting Actions
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#single-action">
+     Single Action
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#batched-actions">
+     Batched Actions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#log-probabilities">
+   Log-Probabilities
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#single-data">
+     Single Data
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#batched-data">
+     Batched Data
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.agent</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">State</span><span class="p">,</span> <span class="n">BatchedStates</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.family</span> <span class="kn">import</span> <span class="n">Family</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">A</span><span class="p">:</span>
+    
+    <span class="k">class</span> <span class="nc">Action</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">Action</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> 
+    
+    <span class="k">def</span> <span class="nf">select_action</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Action</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Action</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">SVCFamily</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">linguaml.types</span> <span class="kn">import</span> <span class="n">Number</span><span class="p">,</span> <span class="n">NumberList</span><span class="p">,</span> <span class="n">is_number_list</span>
+
+<span class="n">is_number_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="selecting-actions">
+<h1>Selecting Actions<a class="headerlink" href="#selecting-actions" title="Permalink to this headline">#</a></h1>
+<section id="single-action">
+<h2>Single Action<a class="headerlink" href="#single-action" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">State</span><span class="p">,</span> <span class="n">calc_n_state_features</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.agent</span> <span class="kn">import</span> <span class="n">Agent</span>
+
+<span class="n">State</span><span class="o">.</span><span class="n">n_time_steps</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">State</span><span class="o">.</span><span class="n">n_time_steps</span><span class="p">,</span> <span class="n">calc_n_state_features</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)))</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">TypeError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">isaac</span><span class="o">/</span><span class="n">Developer</span><span class="o">/</span><span class="n">py</span><span class="o">-</span><span class="n">projects</span><span class="o">/</span><span class="n">linguAML</span><span class="o">/</span><span class="n">book</span><span class="o">/</span><span class="n">rl</span><span class="o">-</span><span class="n">framework</span><span class="o">/</span><span class="n">agent</span><span class="o">.</span><span class="n">ipynb</span> <span class="n">Cell</span> <span class="mi">6</span> <span class="n">line</span> <span class="mi">1</span>
+      <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s1">&#39;vscode-notebook-cell:/Users/isaac/Developer/py-projects/linguAML/book/rl-framework/agent.ipynb#X11sZmlsZQ%3D%3D?line=6&#39;</span><span class="o">&gt;</span><span class="mi">7</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span> <span class="n">State</span><span class="o">.</span><span class="n">n_time_steps</span> <span class="o">=</span> <span class="mi">10</span>
+      <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s1">&#39;vscode-notebook-cell:/Users/isaac/Developer/py-projects/linguAML/book/rl-framework/agent.ipynb#X11sZmlsZQ%3D%3D?line=7&#39;</span><span class="o">&gt;</span><span class="mi">8</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span> <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">State</span><span class="o">.</span><span class="n">n_time_steps</span><span class="p">,</span> <span class="n">calc_n_state_features</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)))</span>
+<span class="o">---&gt;</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s1">&#39;vscode-notebook-cell:/Users/isaac/Developer/py-projects/linguAML/book/rl-framework/agent.ipynb#X11sZmlsZQ%3D%3D?line=9&#39;</span><span class="o">&gt;</span><span class="mi">10</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span> <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)</span>
+     <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s1">&#39;vscode-notebook-cell:/Users/isaac/Developer/py-projects/linguAML/book/rl-framework/agent.ipynb#X11sZmlsZQ%3D%3D?line=10&#39;</span><span class="o">&gt;</span><span class="mi">11</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span> <span class="n">agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+<span class="ne">TypeError</span>: Agent.__init__() missing 1 required positional argument: &#39;numeric_hp_bounds&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="p">])</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="batched-actions">
+<h2>Batched Actions<a class="headerlink" href="#batched-actions" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">BatchedStates</span><span class="p">,</span> <span class="n">calc_n_state_features</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl</span> <span class="kn">import</span> <span class="n">state</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">BatchedStates</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.agent</span> <span class="kn">import</span> <span class="n">Agent</span>
+
+<span class="n">state</span><span class="o">.</span><span class="n">n_time_steps</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">batched_states</span> <span class="o">=</span> <span class="n">BatchedStates</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+        <span class="mi">10</span><span class="p">,</span> 
+        <span class="n">state</span><span class="o">.</span><span class="n">n_time_steps</span><span class="p">,</span> 
+        <span class="n">calc_n_state_features</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">SVCFamily</span><span class="p">,</span>
+    <span class="n">numeric_hp_bounds</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="n">batched_actions</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">batched_states</span><span class="p">)</span>
+
+<span class="n">batched_actions</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batched_actions</span><span class="o">.</span><span class="n">to_hp_configs</span><span class="p">(</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">family</span><span class="p">,</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">numeric_hp_bounds</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="log-probabilities">
+<h1>Log-Probabilities<a class="headerlink" href="#log-probabilities" title="Permalink to this headline">#</a></h1>
+<section id="single-data">
+<h2>Single Data<a class="headerlink" href="#single-data" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.agent</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">State</span><span class="p">,</span> <span class="n">set_state_time_steps</span><span class="p">,</span> <span class="n">calc_n_state_features</span><span class="p">,</span> <span class="n">n_time_steps</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Set the number of time steps for the state</span>
+<span class="n">set_state_time_steps</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Create a random state</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+        <span class="n">n_time_steps</span><span class="p">,</span> 
+        <span class="n">calc_n_state_features</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an agent</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">SVCFamily</span><span class="p">,</span>
+    <span class="n">numeric_hp_bounds</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Select an action</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+<span class="n">action</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;C&#39;: 1.0,
+ &#39;kernel&#39;: 0,
+ &#39;gamma&#39;: 0.0,
+ &#39;tol&#39;: 0.25867778062820435,
+ &#39;decision_function_shape&#39;: 0}
+</pre></div>
+</div>
+</div>
+</div>
+<p>Without providing the argument <code class="docutils literal notranslate"><span class="pre">state</span></code> in agent’s method <code class="docutils literal notranslate"><span class="pre">log_prob</span></code>, we compute the log-probability of the action taken based on the latest state:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the log probability of the action based on the latest state</span>
+<span class="n">log_prob</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+<span class="n">log_prob</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensor(-3.9092, grad_fn=&lt;SumBackward1&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Of course, this is equivalent to:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the log probability of the action based on the provided state</span>
+<span class="n">log_prob</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+<span class="n">log_prob</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensor(-3.9092, grad_fn=&lt;SumBackward1&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>But by passing the <code class="docutils literal notranslate"><span class="pre">state</span></code>, the agent regenerated the distributions for selecting the actions by calling the <code class="docutils literal notranslate"><span class="pre">forward</span></code> method. Hence, you may neglect the argument <code class="docutils literal notranslate"><span class="pre">state</span></code> and save some time if you indeed want to compute the log-probability based on the latest state.</p>
+</section>
+<section id="batched-data">
+<h2>Batched Data<a class="headerlink" href="#batched-data" title="Permalink to this headline">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">linguaml.rl.agent</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">linguaml.tolearn.families</span> <span class="kn">import</span> <span class="n">SVCFamily</span>
+<span class="kn">from</span> <span class="nn">linguaml.rl.state</span> <span class="kn">import</span> <span class="n">BatchedStates</span><span class="p">,</span> <span class="n">set_state_time_steps</span><span class="p">,</span> <span class="n">calc_n_state_features</span><span class="p">,</span> <span class="n">n_time_steps</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Set the number of time steps for the state</span>
+<span class="n">set_state_time_steps</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Create a random batch of states</span>
+<span class="n">batched_states</span> <span class="o">=</span> <span class="n">BatchedStates</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+        <span class="mi">5</span><span class="p">,</span>
+        <span class="n">n_time_steps</span><span class="p">,</span> 
+        <span class="n">calc_n_state_features</span><span class="p">(</span><span class="n">SVCFamily</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an agent</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">SVCFamily</span><span class="p">,</span>
+    <span class="n">numeric_hp_bounds</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Select batched actions</span>
+<span class="n">batched_actions</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">batched_states</span><span class="p">)</span>
+
+<span class="c1"># Compute the log probabilities of the batched actions</span>
+<span class="n">log_probs</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">batched_actions</span><span class="p">)</span>
+
+<span class="n">log_probs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensor([-4.0706, -3.3700, -3.2919, -3.2556, -3.6127], grad_fn=&lt;SumBackward1&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./rl-framework"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="state.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">State</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="env.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">&lt;no title&gt;</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Isaac FEI<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
